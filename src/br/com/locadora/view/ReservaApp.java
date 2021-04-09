@@ -267,17 +267,24 @@ public class ReservaApp extends JFrame {
 	
 	
 	private void cbCarroActionPerformed(ActionEvent evt) {
-
-		if (cbxCarro.getItemCount() > 1) {
-			Carro carro = (Carro) cbxCarro.getSelectedItem();
-			txtMarca.setText(String.valueOf(carro.getMarca()));
+		
+		try {
+			if (cbxCarro.getItemCount() > 1) {
+				Carro carro = (Carro) cbxCarro.getSelectedItem();
+				txtMarca.setText(String.valueOf(carro.getMarca()));
+			}
+		}catch(ClassCastException ec) {
+			txtMarca.setText("");
+			return;
 		}
+		
 	}
 	
 	public void carregarCarro() {
 		CarroDAO dao = new CarroDAO();
 		List<Carro> listaCarro = dao.listaCarro();
 		cbxCarro.removeAllItems();
+		cbxCarro.addItem("");
 		
 		for (Carro carro : listaCarro) {
 			cbxCarro.addItem(carro);
@@ -288,10 +295,12 @@ public class ReservaApp extends JFrame {
 		ClienteDAO dao = new ClienteDAO();
 		List<Cliente> listaCliente = dao.listaCliente();
 		cbxCliente.removeAllItems();
+		cbxCliente.addItem("");
 		
 		for(Cliente cliente : listaCliente) {
 			cbxCliente.addItem(cliente);
 		}
+		
 	}
 	
 	private void habilitar() {
@@ -318,27 +327,44 @@ public class ReservaApp extends JFrame {
 		actionComboBoxs();
 	}
 	
+	
 	public void onCadastrarClick(ActionEvent e) {
-		
+				
 		DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-		
-		
+
 		try {
 			dataRetirada = (Date) sdf.parse(txtDataRetirada.getText());
 			dataDevolucao = (Date) sdf.parse(txtDataDevolucao.getText());
 		} catch (ParseException e1) {
 			// varificação data invalida
 			JOptionPane.showMessageDialog(cadastrar, "Data Inválida", "Aviso", JOptionPane.ERROR_MESSAGE);
-			return; 
+			return;
 		}
-	
+		
+		
 		Reserva reserva = new Reserva();
 		Cliente cliente = new Cliente();
 		Carro carro = new Carro();
-		cliente = (Cliente) cbxCliente.getSelectedItem();
-		carro = (Carro) cbxCarro.getSelectedItem();
-		// verificações
+		//cliente = (Cliente) cbxCliente.getSelectedItem();
+		//carro = (Carro) cbxCarro.getSelectedItem();
 		
+		// verificações
+		try {
+			cliente = (Cliente) cbxCliente.getSelectedItem();
+		} catch (ClassCastException ex) {
+			JOptionPane.showMessageDialog(cadastrar, "Selecione um cliente!", "Aviso", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		
+		try {
+			carro = (Carro) cbxCarro.getSelectedItem();
+		} catch (ClassCastException ex) {
+			JOptionPane.showMessageDialog(cadastrar, "Selecione um carro!", "Aviso", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+	
+		
+		// setando dados para serem inseridos no banco 
 		reserva.setCliente(cliente);
 		reserva.setCarro(carro);
 		reserva.setDataRetirada(dataRetirada);
@@ -374,6 +400,42 @@ public class ReservaApp extends JFrame {
 		worker.execute();
 	}
 	
+	
+	public boolean verificaDatas(Date dt, Date dv) {
+		DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+		try {
+			dt = (Date) sdf.parse(txtDataRetirada.getText());
+			dv = (Date) sdf.parse(txtDataDevolucao.getText());
+		} catch (ParseException e1) {
+			// varificação data invalida
+			JOptionPane.showMessageDialog(cadastrar, "Data Inválida", "Aviso", JOptionPane.ERROR_MESSAGE);
+			return true;
+		}
+		
+		return false;
+		
+	}
+	
+	/*
+	public boolean verificaItensCbx(Cliente cliente, Carro carro) {
+		try {
+			cliente = (Cliente) cbxCliente.getSelectedItem();
+		} catch (ClassCastException ex) {
+			JOptionPane.showMessageDialog(cadastrar, "Selecione um cliente!", "Aviso", JOptionPane.ERROR_MESSAGE);
+			return true;
+		}
+		
+		try {
+			carro = (Carro) cbxCarro.getSelectedItem();
+		} catch (ClassCastException ex) {
+			JOptionPane.showMessageDialog(cadastrar, "Selecione um carro!", "Aviso", JOptionPane.ERROR_MESSAGE);
+			return true;
+		}
+		
+		return false;
+	}
+	*/
 	private void confirmExit() {
 		int answer = JOptionPane.showConfirmDialog(null,
 				"Se você sair do aplicativo, o cadastro será cancelado. Deseja continuar?", "Cancelar",
